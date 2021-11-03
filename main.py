@@ -2,16 +2,14 @@
 
 #Imports:
 ######################################
-from typing_extensions import Concatenate
 from colorama import Fore, Back, Style
 import argparse
 import readchar
 from collections import namedtuple
 import string
 import random
-import getch
 from getch import getch 
-import time
+from time import time
 #####################################
 
 #Inputs:
@@ -55,11 +53,24 @@ def read_key():
     print (pressed_keys)
 
 #Main:
+def timed_mode(time):
 
 def main():
+    parser = argparse.ArgumentParser(description='PSR argparse example.')
+    parser.add_argument('-utm', '--use_time_mode', action='store_true', help='')
+    parser.add_argument('-mn', '--max_number', type=int, help='')
+    args = vars(parser.parse_args())
+    print(args)
 
-    
-    
+    if args['use_time_mode']:
+        print('Using time mode. test will run up to ' + str(args['max_number']) + ' seconds')
+        timed_mode(args['max_number'])
+    else:
+        print('Not using time mode. Test will ask for ' + str(args['max_number']) + ' responses')
+    print(args['use_time_mode'])
+    if args['use_time_mode'] and args['max_number'] > 0 :
+        elif not args['use_time_mode'] and args['max_number'] > 0 :
+        max_key_mode(args['max_number'])
     if start_test():
         print(Fore.GREEN + Style.BRIGHT + 'Test started' + Style.RESET_ALL)
         generate_rkey()
