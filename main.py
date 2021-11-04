@@ -50,9 +50,7 @@ def key_pressing(g_stats):
     print("Type letter "+generated_key)
     pressed_key = readchar.readkey()
     after_press_time=time()
-    g_stats['test_start']=init_time
-    g_stats['test_end']=after_press_time
-
+    g_stats['test_start']=ctime()
     press_time=after_press_time-init_time
     
     Input = namedtuple('Input', ['requested' , 'received' , 'duration'])
@@ -78,28 +76,11 @@ def key_pressing(g_stats):
 def show_stats(stats):
     print(stats)
 
-#result example
-# {'accuracy': 0.0,
-#  'inputs': [Input(requested='v', received='s', duration=0.11265206336975098),
-#             Input(requested='w', received='d', duration=0.07883906364440918),
-#             Input(requested='d', received='a', duration=0.0720210075378418),
-#             Input(requested='a', received='s', duration=0.0968179702758789),
-#             Input(requested='b', received='d', duration=0.039067983627319336)],
-#  'number_of_hits': 0,
-#  'number_of_types': 5,
-#  'test_duration': 0.3997969627380371,
-#  'test_end': 'Thu Sep 10 16:36:20 2020',
-#  'test_start': 'Thu Sep 10 16:36:20 2020',
-#  'type_average_duration': 0.07987945793212418,
-#  'type_hit_average_duration': 0.0,
-#  'type_miss_average_duration': 0.07987945793212418}
-
 ######## if it is based on time ########
 def timed_mode(max_time):
     stats = {
         'inputs':[],
         'number_of_hits':0,
-        'number_of_misses':0,
         'number_of_types':0,
         'type_miss_average_duration':0,
         'type_hit_average_duration':0,
@@ -109,6 +90,7 @@ def timed_mode(max_time):
     start_time=time()
     while max_time+start_time>time():
        key_pressing(stats)
+    
     stats['test_duration']=time()-start_time
     print(Fore.RED+"Time is over"+Style.RESET_ALL)
     show_stats(stats)
@@ -119,15 +101,16 @@ def max_key_mode(num_chars):
     stats = {
         'inputs':[],
         'number_of_hits':0,
-        'number_of_misses':0,
         'number_of_types':0,
         'type_miss_average_duration':0,
         'type_hit_average_duration':0,
         'type_average_duration':0
     }
+    start_time=time()
     print(Fore.GREEN + Style.BRIGHT + 'Test started' + Style.RESET_ALL)
     for i in range(num_chars):
         key_pressing(stats)
+    stats['test_end']=ctime()
     stats['test_duration']=time()-start_time
     show_stats(stats)
     print(Fore.RED + Style.BRIGHT + 'Test finished' + Style.RESET_ALL)
