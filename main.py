@@ -3,6 +3,7 @@
 #Imports:
 ######################################
 from colorama import Fore, Back, Style
+import sys
 import argparse
 import readchar
 from collections import namedtuple
@@ -10,16 +11,18 @@ import string
 import random
 from getch import getch 
 from time import time, sleep, ctime
+from pprint import pprint
 #####################################
 
 
 
+Input = namedtuple('Input', ['requested' , 'received' , 'duration'])
 
 #Função começar teste:
 #Caso utilizador pretenda começar o teste pressiona uma tecla
 #Caso utilizador pretenda sair, pressiona X
 def can_start_test():
-
+    
     print(Fore.RED + Style.BRIGHT + 'Typing test: ' +  Style.RESET_ALL + Fore.BLUE + Style.BRIGHT +  '\nPress a key to start the test' +  Style.RESET_ALL + '(Space to Leave)'  +  Style.RESET_ALL)
     pressed_key = ord(getch())
     # Space key == 32 in ascii table
@@ -49,71 +52,60 @@ def key_pressing(g_stats):
     init_time=time()
     print("Type letter "+generated_key)
     pressed_key = readchar.readkey()
+    if pressed_key==' ':
+        return True
     after_press_time=time()
-    g_stats['test_start']=ctime()
     press_time=after_press_time-init_time
     
-    Input = namedtuple('Input', ['requested' , 'received' , 'duration'])
-
     press_stats = Input(generated_key, pressed_key, press_time)
     g_stats['inputs'].append(press_stats)
     g_stats['number_of_types']+=1
     if pressed_key == generated_key:
         g_stats['number_of_hits']+=1
         g_stats['type_hit_average_duration']=(g_stats['type_hit_average_duration']*(g_stats['number_of_hits']-1)+press_time)/g_stats['number_of_types']
-
         print('You typed letter ' + Fore.GREEN + Style.BRIGHT + pressed_key + Style.RESET_ALL)
     else:
         g_stats['type_miss_average_duration']=(g_stats['type_miss_average_duration']*(g_stats['number_of_types']-1-g_stats['number_of_hits'])+press_time)/g_stats['number_of_types']
-        
         print('You typed letter ' + Fore.RED + Style.BRIGHT + pressed_key + Style.RESET_ALL)
     
     g_stats['type_average_duration']=((g_stats['number_of_types']-1)*g_stats['type_average_duration']+press_time)/g_stats['number_of_types']
     g_stats['accuracy']=g_stats['number_of_hits']/g_stats['number_of_types']
-    return generated_key
-
+    return False
 
 def show_stats(stats):
-    print(stats)
+    pprint(stats)
 
 ######## if it is based on time ########
-def timed_mode(max_time):
-    stats = {
-        'inputs':[],
-        'number_of_hits':0,
-        'number_of_types':0,
-        'type_miss_average_duration':0,
-        'type_hit_average_duration':0,
-        'type_average_duration':0
-    }
+def timed_mode(max_time, stats):
     print(Fore.GREEN + Style.BRIGHT + 'Test started' + Style.RESET_ALL)
+    stats['test_start']=ctime()
     start_time=time()
     while max_time+start_time>time():
-       key_pressing(stats)
-    
-    stats['test_duration']=time()-start_time
-    print(Fore.RED+"Time is over"+Style.RESET_ALL)
-    show_stats(stats)
-    print(Fore.RED + Style.BRIGHT + 'Test finished' + Style.RESET_ALL)
-
-######## if it is based on character inputs ########
-def max_key_mode(num_chars): 
-    stats = {
-        'inputs':[],
-        'number_of_hits':0,
-        'number_of_types':0,
-        'type_miss_average_duration':0,
-        'type_hit_average_duration':0,
-        'type_average_duration':0
-    }
-    start_time=time()
-    print(Fore.GREEN + Style.BRIGHT + 'Test started' + Style.RESET_ALL)
-    for i in range(num_chars):
-        key_pressing(stats)
+       interrupted = key_pressing(stats)
+       if interrupted:
+            print(Fore.RED+"Test was interrupted."+Style.RESET_ALL)
+            break
     stats['test_end']=ctime()
     stats['test_duration']=time()-start_time
-    show_stats(stats)
+    print(Fore.RED+"Time is over"+Style.RESET_ALL)
     print(Fore.RED + Style.BRIGHT + 'Test finished' + Style.RESET_ALL)
+    return stats
+
+######## if it is based on character inputs ########
+def max_key_mode(num_chars, stats): 
+    
+    print(Fore.GREEN + Style.BRIGHT + 'Test started' + Style.RESET_ALL)
+    stats['test_start']=ctime()
+    start_time=time()
+    for i in range(num_chars):
+        interrupted = key_pressing(stats)
+        if interrupted:
+            print(Fore.RED+"Test was interrupted."+Style.RESET_ALL)
+            break
+    stats['test_end']=ctime()
+    stats['test_duration']=time()-start_time
+    print(Fore.RED + Style.BRIGHT + 'Test finished' + Style.RESET_ALL)
+    return stats
 
 
 #Main:
@@ -122,18 +114,24 @@ def main():
     parser.add_argument('-utm', '--use_time_mode', action='store_true', help='Max number of secs for time mode or maximum number of inputs for number of inputs mode.')
     parser.add_argument('-mn', '--max_number', type=int, help='Max number of seconds for time mode or maximum number of inputs for number of inputs mode.')
     args = vars(parser.parse_args())
-
+    stats = {
+        'inputs':[],
+        'number_of_hits':0,
+        'number_of_types':0,
+        'type_miss_average_duration':0,
+        'type_hit_average_duration':0,
+        'type_average_duration':0
+    }
     if can_start_test():
         if args['use_time_mode']:
             print('Using time mode. test will run up to ' + str(args['max_number']) + ' seconds')
-            timed_mode(args['max_number'])
+            stats = timed_mode(args['max_number'], stats)
             print
         else:
             print('Not using time mode. Test will ask for ' + str(args['max_number']) + ' responses')
-            max_key_mode(args['max_number'])
-
+            stats = max_key_mode(args['max_number'], stats)
+        show_stats(stats)
     else:
-        
         print(Fore.RED + Style.BRIGHT + 'Test canceled' + Style.RESET_ALL)
     
 
