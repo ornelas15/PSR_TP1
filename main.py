@@ -13,11 +13,15 @@ import random
 from getch import getch 
 from time import time, sleep, ctime
 from pprint import pprint
+import signal
 #####################################
 
 
 
 Input = namedtuple('Input', ['requested' , 'received' , 'duration'])
+
+def timeout_handler(num, stack):
+    raise Exception("TIME_OVER")
 
 #Função começar teste:
 #Caso utilizador pretenda começar o teste pressiona uma tecla
@@ -80,19 +84,24 @@ def show_stats(stats):
 def timed_mode(max_time, stats):
     print(Fore.GREEN + Style.BRIGHT + 'Test started' + Style.RESET_ALL)
     stats['test_start']=ctime()
+    signal.signal(signal.SIGALRM, timeout_handler)
     start_time=time()
-    while max_time+start_time>time():
-       interrupted = key_pressing(stats)
-       if interrupted:
-            break    
-    stats['test_end']=ctime()
-    stats['test_duration']=time()-start_time
-    if interrupted:
-        print(Fore.YELLOW + Style.BRIGHT +"Test was interrupted."+Style.RESET_ALL)
-    else:       
-        print(Fore.YELLOW + Style.BRIGHT + "Time is over" + Style.RESET_ALL) 
-    print(Fore.RED + Style.BRIGHT + 'Test finished' + Style.RESET_ALL)
-    print(Fore.YELLOW + Style.BRIGHT + 'The results were:' + Style.RESET_ALL)
+    signal.alarm(max_time)
+    try:
+        while True:
+            interrupted = key_pressing(stats)
+            if interrupted:
+                    break
+    except:
+        print(Fore.YELLOW + Style.BRIGHT + "Time is over" + Style.RESET_ALL)
+    finally:
+        stats['test_end']=ctime()
+        stats['test_duration']=time()-start_time
+        if interrupted:
+            print(Fore.YELLOW + Style.BRIGHT +"Test was interrupted."+Style.RESET_ALL)
+        else:       
+            print(Fore.RED + Style.BRIGHT + 'Test finished' + Style.RESET_ALL)
+        print(Fore.YELLOW + Style.BRIGHT + 'The results were:' + Style.RESET_ALL)
     return stats
 
 ######## if it is based on character inputs ########
@@ -117,7 +126,7 @@ def max_key_mode(num_chars, stats):
 def main():
     parser = argparse.ArgumentParser(description='Typing test')
     parser.add_argument('-utm', '--use_time_mode', action='store_true', help='Max number of secs for time mode or maximum number of inputs for number of inputs mode.')
-    parser.add_argument('-mn', '--max_number', type=int, help='Max number of seconds for time mode or maximum number of inputs for number of inputs mode.')
+    parser.add_argument('-mn', '--max_number', required=True, type=int, help='Max number of seconds for time mode or maximum number of inputs for number of inputs mode.')
     args = vars(parser.parse_args())
     stats = {
         'inputs':[],
