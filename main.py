@@ -2,6 +2,7 @@
 
 #Imports:
 ######################################
+from termios import BRKINT
 from colorama import Fore, Back, Style
 import sys
 import argparse
@@ -20,7 +21,7 @@ Input = namedtuple('Input', ['requested' , 'received' , 'duration'])
 
 #Função começar teste:
 #Caso utilizador pretenda começar o teste pressiona uma tecla
-#Caso utilizador pretenda sair, pressiona X
+#Caso utilizador pretenda sair, pressiona Space
 def can_start_test():
     
     print(Fore.RED + Style.BRIGHT + 'Typing test: ' +  Style.RESET_ALL + Fore.BLUE + Style.BRIGHT +  '\nPress a key to start the test' +  Style.RESET_ALL + '(Space to Leave)'  +  Style.RESET_ALL)
@@ -50,7 +51,7 @@ def generate_rkey():
 def key_pressing(g_stats):
     generated_key=generate_rkey()
     init_time=time()
-    print("Type letter "+generated_key)
+    print("Type letter " + Fore.YELLOW + Style.BRIGHT + generated_key + Style.RESET_ALL)
     pressed_key = readchar.readkey()
     if pressed_key==' ':
         return True
@@ -83,12 +84,15 @@ def timed_mode(max_time, stats):
     while max_time+start_time>time():
        interrupted = key_pressing(stats)
        if interrupted:
-            print(Fore.RED+"Test was interrupted."+Style.RESET_ALL)
-            break
+            break    
     stats['test_end']=ctime()
     stats['test_duration']=time()-start_time
-    print(Fore.RED+"Time is over"+Style.RESET_ALL)
+    if interrupted:
+        print(Fore.YELLOW + Style.BRIGHT +"Test was interrupted."+Style.RESET_ALL)
+    else:       
+        print(Fore.YELLOW + Style.BRIGHT + "Time is over" + Style.RESET_ALL) 
     print(Fore.RED + Style.BRIGHT + 'Test finished' + Style.RESET_ALL)
+    print(Fore.YELLOW + Style.BRIGHT + 'The results were:' + Style.RESET_ALL)
     return stats
 
 ######## if it is based on character inputs ########
@@ -100,11 +104,12 @@ def max_key_mode(num_chars, stats):
     for i in range(num_chars):
         interrupted = key_pressing(stats)
         if interrupted:
-            print(Fore.RED+"Test was interrupted."+Style.RESET_ALL)
+            print(Fore.YELLOW + Style.BRIGHT +"Test was interrupted."+Style.RESET_ALL)
             break
     stats['test_end']=ctime()
     stats['test_duration']=time()-start_time
     print(Fore.RED + Style.BRIGHT + 'Test finished' + Style.RESET_ALL)
+    print(Fore.YELLOW + Style.BRIGHT + 'The results were:' + Style.RESET_ALL)
     return stats
 
 
@@ -124,11 +129,11 @@ def main():
     }
     if can_start_test():
         if args['use_time_mode']:
-            print('Using time mode. test will run up to ' + str(args['max_number']) + ' seconds')
+            print(Fore.CYAN + Style.BRIGHT + 'Using time mode. Test will run up to ' + str(args['max_number']) + ' seconds' + Style.RESET_ALL)
             stats = timed_mode(args['max_number'], stats)
             print
         else:
-            print('Not using time mode. Test will ask for ' + str(args['max_number']) + ' responses')
+            print(Fore.CYAN + Style.BRIGHT + 'Not using time mode. Test will ask for ' + str(args['max_number']) + ' responses' + Style.RESET_ALL)
             stats = max_key_mode(args['max_number'], stats)
         show_stats(stats)
     else:
