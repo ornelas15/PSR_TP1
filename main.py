@@ -2,9 +2,7 @@
 
 #Imports:
 ######################################
-from termios import BRKINT
-from colorama import Fore, Back, Style
-import sys
+from colorama import Fore, Style
 import argparse
 import readchar
 from collections import namedtuple
