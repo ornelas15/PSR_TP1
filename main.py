@@ -85,6 +85,7 @@ def timed_mode(max_time, stats):
     signal.signal(signal.SIGALRM, timeout_handler)
     start_time=time()
     signal.alarm(max_time)
+    interrupted=False
     try:
         while True:
             interrupted = key_pressing(stats)
