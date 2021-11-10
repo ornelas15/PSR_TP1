@@ -15,15 +15,15 @@ import signal
 #####################################
 
 
-
+#Create a variable named Input from type tuple:
 Input = namedtuple('Input', ['requested' , 'received' , 'duration'])
 
 def timeout_handler(num, stack):
     raise Exception("TIME_OVER")
 
-#Função começar teste:
-#Caso utilizador pretenda começar o teste pressiona uma tecla
-#Caso utilizador pretenda sair, pressiona Space
+#Starting test function:
+#If the user wants to start the test, should press a key
+#If not, and wants to leave the program, should press space
 def can_start_test():
     
     print(Fore.RED + Style.BRIGHT + 'Typing test: ' +  Style.RESET_ALL + Fore.BLUE + Style.BRIGHT +  '\nPress a key to start the test' +  Style.RESET_ALL + '(Space to Leave)'  +  Style.RESET_ALL)
@@ -41,27 +41,27 @@ def can_start_test():
         return True
 
 
-######## Funcao para obter caracter aleatorio ########
+######## Function to get random character ########
 def generate_rkey():
-    lc = string.ascii_lowercase     #todas as letras minusculas em string
-    rkey = random.choice(lc)        #escolhe valor aleatório da string
+    lc = string.ascii_lowercase     #every small letter in a string
+    rkey = random.choice(lc)        #chooses random letter from string
     
     return rkey 
     
 
-######## Funcao que trata o key press ########
+######## Key Press function ########
 def key_pressing(g_stats):
-    generated_key=generate_rkey()
-    init_time=time()
+    generated_key=generate_rkey()                   #typing test started, the program will generate a random key and wait for the user output to compare both char's
+    init_time=time()                                #will also start couting the time 
     print("Type letter " + Fore.YELLOW + Style.BRIGHT + generated_key + Style.RESET_ALL)
     pressed_key = readchar.readkey()
     if pressed_key==' ':
         return True
     after_press_time=time()
-    press_time=after_press_time-init_time
+    press_time=after_press_time-init_time         
     
-    press_stats = Input(generated_key, pressed_key, press_time)
-    g_stats['inputs'].append(press_stats)
+    press_stats = Input(generated_key, pressed_key, press_time)              #after getting every information needed the program will show the result
+    g_stats['inputs'].append(press_stats)                                    #if either the key was the right one or not
     g_stats['number_of_types']+=1
     if pressed_key == generated_key:
         g_stats['number_of_hits']+=1
